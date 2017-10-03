@@ -1,7 +1,7 @@
 ## Interface: 70300
 ## Title: Event Assistant
 ## Author: Ellypse
-## Note: Makes organizing events easier
+## Notes: Makes organizing events easier
 ## Version: 0.1
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
