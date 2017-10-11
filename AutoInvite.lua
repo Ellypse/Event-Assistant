@@ -23,9 +23,11 @@ function EventAssistant:OnEnable()
 	local GuildUninvite = GuildUninvite;
 	local ShowUIPanel = ShowUIPanel;
 	local After = C_Timer.After;
+
+	local MAX_GUILD_MEMBERS = 1000;
 	
-	local userName, realm = UnitFullName("player");
-	userName = userName .. "-" .. realm;
+	local userName, userRealm = UnitFullName("player");
+	userName = userName .. "-" .. userRealm;
 	
 	local function tableSize(table, ifValue)
 		local count = 0;
@@ -58,12 +60,12 @@ function EventAssistant:OnEnable()
 	--- Invite target on shift-click
 	TargetFrame:HookScript("OnClick", function()
 		if IsShiftKeyDown() then
-			local targetName, realm = UnitName("target");
-			if not realm then
-				realm = GetRealmName();
+			local targetName, targetRealm = UnitName("target");
+			if not targetRealm then
+				targetRealm = userRealm;
 			end
 			startInvitationMode();
-			invitePlayerToGuild(targetName .. "-" .. realm);
+			invitePlayerToGuild(targetName .. "-" .. targetRealm);
 			Print("You have sent a guild invitation to " .. targetName);
 			willEndInvitationMode();
 		end
@@ -103,7 +105,7 @@ function EventAssistant:OnEnable()
 		
 		EventAssistantMainFrame.InnerText.guildMembersOnline:SetText("Guild members online: " .. onlineMembers);
 		EventAssistantMainFrame.InnerText.guildMembersOffline:SetText("Guild members offline: " .. (totalMembers - onlineMembers));
-		EventAssistantMainFrame.InnerText.guildMembersAvailable:SetText("Remaining guild spots: " .. (500 - totalMembers));
+		EventAssistantMainFrame.InnerText.guildMembersAvailable:SetText("Remaining guild spots: " .. (MAX_GUILD_MEMBERS - totalMembers));
 		EventAssistantMainFrame.InnerText.addedWithEventAssistant:SetText("Guild members added via EventAssistant: " .. tableSize(EventAssistantPlayersTable, 2));
 		
 		local queueSize = tableSize(EventAssistantPlayersTable, 1);
@@ -212,7 +214,7 @@ function EventAssistant:OnEnable()
 			and message:lower():find("invit")
 		then
 			if not playerName:find("-") then
-				playerName = playerName .. "-" .. realm;
+				playerName = playerName .. "-" .. userRealm;
 			end
 			if EventAssistantPlayersTable[playerName] or playerName == userName then return end
 			
