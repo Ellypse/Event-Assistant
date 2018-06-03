@@ -2,7 +2,7 @@
 ## Title: Event Assistant
 ## Author: Ellypse
 ## Notes: Makes organizing events easier
-## Version: 1.1
+## Version: 1.2
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: EventAssistantPlayersTable, EventAssistantConfig

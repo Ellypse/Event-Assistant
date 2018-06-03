@@ -128,10 +128,12 @@ function EventAssistant:OnEnable()
 
 	local function flashMinimap()
 		if tableSize(EventAssistantPlayersTable) > 0 then
-			QueueStatusMinimapButton_SetGlowLock(MMButton, "event-assistant", true)
+			Highlight:SetShown(true);
+			AnimationGroup:Play()
 			FlashClientIcon()
 		else
-			QueueStatusMinimapButton_SetGlowLock(MMButton, "event-assistant", false, 1)
+			Highlight:SetShown(false);
+			AnimationGroup:Stop()
 		end
 	end
 	
