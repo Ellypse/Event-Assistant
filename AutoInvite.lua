@@ -127,7 +127,7 @@ function EventAssistant:OnEnable()
 	MMButton.glowLocks = {};
 
 	local function flashMinimap()
-		if tableSize(EventAssistantPlayersTable) > 0 then
+		if tableSize(EventAssistantPlayersTable, 1) > 0 then
 			Highlight:SetShown(true);
 			AnimationGroup:Play()
 			FlashClientIcon()
