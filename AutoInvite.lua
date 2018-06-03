@@ -32,6 +32,7 @@ function EventAssistant:OnEnable()
 	local ShowUIPanel = ShowUIPanel;
 	local HideUIPanel = HideUIPanel;
 	local After = C_Timer.After;
+	local refreshWindowUI;
 
 	local MAX_GUILD_MEMBERS = 1000;
 	
@@ -50,6 +51,89 @@ function EventAssistant:OnEnable()
 	
 	local modIsInInvitationMode = false;
 	EventAssistantPlayersTable = {};
+
+	local function openUI()
+		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
+		if guildName then
+			if not EventAssistantMainFrame:IsVisible() then
+				refreshWindowUI();
+				ShowUIPanel(EventAssistantMainFrame);
+			else
+				HideUIPanel(EventAssistantMainFrame)
+			end
+		else
+			Print("|cffff0000You don't have a guild. You need a guild in order to use EventAssisant to invite people to your event guild|r");
+		end
+	end
+
+	self:RegisterChatCommand("eva", openUI);
+
+	local EventAssistantLDB = LibStub("LibDataBroker-1.1"):NewDataObject("EventAssistant", {
+		type = "launcher",
+		label = "Event Assistant",
+		icon = MAIN_ICON,
+		OnClick = openUI,
+		tocname = "EventAssistant";
+		---@param tooltip GameTooltip
+		OnTooltipShow = function(tooltip)
+			tooltip:SetText("Event Assistant", 1, 1, 1,1)
+			tooltip:AddLine("Click to open")
+			tooltip:AddLine("Drag and drop to move")
+			tooltip:AddLine(" ")
+			tooltip:AddLine("Invite queue (" .. tableSize(EventAssistantPlayersTable, 1) .. ")");
+		end
+	})
+	local icon = LibStub("LibDBIcon-1.0")
+
+	self.db = LibStub("AceDB-3.0"):New("EventAssistantConfig", {
+		profile = {
+			minimap = {
+				hide = false,
+			},
+		},
+	})
+	icon:Register("EventAssistant", EventAssistantLDB, self.db.profile.minimap)
+
+	---@type Frame
+	local MMButton = icon:GetMinimapButton("EventAssistant");
+
+	---@type Texture
+	local Highlight = MMButton:CreateTexture(nil, "OVERLAY")
+	Highlight:Hide();
+	Highlight:SetAlpha(0);
+	Highlight:SetBlendMode("ADD")
+	Highlight:SetAtlas("groupfinder-eye-highlight")
+	Highlight:SetAllPoints()
+	MMButton.Highlight = Highlight;
+
+	---@type AnimationGroup
+	local AnimationGroup = MMButton:CreateAnimationGroup()
+	AnimationGroup:SetToFinalAlpha(true)
+	AnimationGroup:SetLooping("REPEAT")
+
+
+	---@type Alpha
+	AnimationGroup.Highlight = AnimationGroup:CreateAnimation("Alpha");
+	AnimationGroup.Highlight:SetStartDelay(0.1)
+	AnimationGroup.Highlight:SetSmoothing("NONE")
+	AnimationGroup.Highlight:SetDuration(1.0)
+	AnimationGroup.Highlight:SetOrder(1)
+	AnimationGroup.Highlight:SetFromAlpha(1)
+	AnimationGroup.Highlight:SetToAlpha(0)
+	AnimationGroup.Highlight:SetTarget(MMButton.Highlight)
+
+	MMButton.EyeHighlightAnim = AnimationGroup
+
+	MMButton.glowLocks = {};
+
+	local function flashMinimap()
+		if tableSize(EventAssistantPlayersTable) > 0 then
+			QueueStatusMinimapButton_SetGlowLock(MMButton, "event-assistant", true)
+			FlashClientIcon()
+		else
+			QueueStatusMinimapButton_SetGlowLock(MMButton, "event-assistant", false, 1)
+		end
+	end
 	
 	local function startInvitationMode()
 		modIsInInvitationMode = true;
@@ -59,6 +143,7 @@ function EventAssistant:OnEnable()
 		After(1, function()
 			modIsInInvitationMode = false;
 		end)
+		flashMinimap()
 	end
 	
 	local function invitePlayerToGuild(playerFullName)
@@ -108,7 +193,7 @@ function EventAssistant:OnEnable()
 	
 	SetPortraitToTexture(EventAssistantMainFrame.portrait, MAIN_ICON);
 	
-	local function refreshWindowUI()
+	function refreshWindowUI()
 		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
 		local totalMembers, onlineMembers, onlineAndMobileMembers = GetNumGuildMembers();
 		
@@ -128,47 +213,6 @@ function EventAssistant:OnEnable()
 		EventAssistantMainFrame.InviteAll:SetWidth(max(116, EventAssistantMainFrame.InviteAll:GetTextWidth() + 24));
 		EventAssistantMainFrame.guildName:SetText(guildName);
 	end
-
-	local function openUI()
-		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
-		if guildName then
-			if not EventAssistantMainFrame:IsVisible() then
-				refreshWindowUI();
-				ShowUIPanel(EventAssistantMainFrame);
-			else
-				HideUIPanel(EventAssistantMainFrame)
-			end
-		else
-			Print("|cffff0000You don't have a guild. You need a guild in order to use EventAssisant to invite people to your event guild|r");
-		end
-	end
-	
-	self:RegisterChatCommand("eva", openUI);
-
-	local EventAssistantLDB = LibStub("LibDataBroker-1.1"):NewDataObject("EventAssistant", {
-		type = "launcher",
-		label = "Event Assistant",
-		icon = MAIN_ICON,
-		OnClick = openUI,
-		tocname = "EventAssistant";
-		---@param tooltip GameTooltip
-		OnTooltipShow = function(tooltip)
-			tooltip:SetText("Event Assistant", 1, 1, 1,1)
-			tooltip:AddLine("Click to open")
-			tooltip:AddLine("Drag and drop to move")
-		end
-	})
-	local icon = LibStub("LibDBIcon-1.0")
-
-	-- Obviously you'll need a ## SavedVariables: BunniesDB line in your TOC, duh!
-	self.db = LibStub("AceDB-3.0"):New("EventAssistant", {
-		profile = {
-			minimap = {
-				hide = false,
-			},
-		},
-	})
-	icon:Register("EventAssistant", EventAssistantLDB, self.db.profile.minimap)
 	
 	EventAssistantMainFrame.InnerText.removeOfflineGuildMembers:SetScript("OnClick", function()
 		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
@@ -235,6 +279,7 @@ function EventAssistant:OnEnable()
 		end
 		Print("You have sent " .. queueSize .. " guild invitation(s).");
 		willEndInvitationMode();
+		flashMinimap();
 	end)
 	
 	for _, channel in pairs({
@@ -260,6 +305,8 @@ function EventAssistant:OnEnable()
 			
 			EventAssistantPlayersTable[playerName] = 1;
 		end
+
+		flashMinimap();
 	end)
 	
 	EventAssistantMainFrame:SetScript("OnUpdate", function(self, elapsed)
@@ -268,6 +315,7 @@ function EventAssistant:OnEnable()
 		if (self.TimeSinceLastUpdate > 1) then
 			refreshWindowUI();
 			self.TimeSinceLastUpdate = 0;
+			flashMinimap();
 		end
 	end)
 	

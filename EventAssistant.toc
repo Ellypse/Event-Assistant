@@ -5,5 +5,5 @@
 ## Version: 1.1
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## SavedVariables: EventAssistantPlayersTable
+## SavedVariables: EventAssistantPlayersTable, EventAssistantConfig
 Main.xml
