@@ -4,6 +4,14 @@ local function Print(text)
 	print("|cffD4C26A[Event Assistant]|r: " .. text );
 end
 
+local MAIN_ICON = "Interface\\ICONS\\Achievement_Character_Gnome_Female"
+local today = date("*t");
+
+-- Use rainbow icon in June, for the Running of the Trolls
+if today.month == 6 then
+	MAIN_ICON = "Interface\\ICONS\\Achievement_DoubleRainbow"
+end
+
 function EventAssistant:OnEnable()
 	
 	local strsub = strsub;
@@ -22,6 +30,7 @@ function EventAssistant:OnEnable()
 	local GetGuildRosterInfo = GetGuildRosterInfo;
 	local GuildUninvite = GuildUninvite;
 	local ShowUIPanel = ShowUIPanel;
+	local HideUIPanel = HideUIPanel;
 	local After = C_Timer.After;
 
 	local MAX_GUILD_MEMBERS = 1000;
@@ -97,7 +106,7 @@ function EventAssistant:OnEnable()
 	
 	UIPanelWindows["EventAssistantMainFrame"] = { area = "left", pushable = 3, whileDead = 1 };
 	
-	SetPortraitToTexture(EventAssistantMainFrame.portrait, "Interface\\ICONS\\temp");
+	SetPortraitToTexture(EventAssistantMainFrame.portrait, MAIN_ICON);
 	
 	local function refreshWindowUI()
 		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
@@ -119,16 +128,47 @@ function EventAssistant:OnEnable()
 		EventAssistantMainFrame.InviteAll:SetWidth(max(116, EventAssistantMainFrame.InviteAll:GetTextWidth() + 24));
 		EventAssistantMainFrame.guildName:SetText(guildName);
 	end
-	
-	self:RegisterChatCommand("eva", function()
+
+	local function openUI()
 		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
 		if guildName then
-			refreshWindowUI();
-			ShowUIPanel(EventAssistantMainFrame);
+			if not EventAssistantMainFrame:IsVisible() then
+				refreshWindowUI();
+				ShowUIPanel(EventAssistantMainFrame);
+			else
+				HideUIPanel(EventAssistantMainFrame)
+			end
 		else
 			Print("|cffff0000You don't have a guild. You need a guild in order to use EventAssisant to invite people to your event guild|r");
 		end
-	end);
+	end
+	
+	self:RegisterChatCommand("eva", openUI);
+
+	local EventAssistantLDB = LibStub("LibDataBroker-1.1"):NewDataObject("EventAssistant", {
+		type = "launcher",
+		label = "Event Assistant",
+		icon = MAIN_ICON,
+		OnClick = openUI,
+		tocname = "EventAssistant";
+		---@param tooltip GameTooltip
+		OnTooltipShow = function(tooltip)
+			tooltip:SetText("Event Assistant", 1, 1, 1,1)
+			tooltip:AddLine("Click to open")
+			tooltip:AddLine("Drag and drop to move")
+		end
+	})
+	local icon = LibStub("LibDBIcon-1.0")
+
+	-- Obviously you'll need a ## SavedVariables: BunniesDB line in your TOC, duh!
+	self.db = LibStub("AceDB-3.0"):New("EventAssistant", {
+		profile = {
+			minimap = {
+				hide = false,
+			},
+		},
+	})
+	icon:Register("EventAssistant", EventAssistantLDB, self.db.profile.minimap)
 	
 	EventAssistantMainFrame.InnerText.removeOfflineGuildMembers:SetScript("OnClick", function()
 		local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
