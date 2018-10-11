@@ -20,7 +20,6 @@ function EventAssistant:OnEnable()
 	local pairs = pairs;
 	local strsplit = strsplit;
 	local IsModifiedClick = IsModifiedClick;
-	local GetRealmName = GetRealmName;
 	local UnitName = UnitName;
 	local IsShiftKeyDown = IsShiftKeyDown;
 	local GuildInvite = GuildInvite;
