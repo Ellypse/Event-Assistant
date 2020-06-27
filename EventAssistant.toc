@@ -1,8 +1,8 @@
-## Interface: 80000
+## Interface: 80300
 ## Title: Event Assistant
 ## Author: Ellypse
 ## Notes: Makes organizing events easier
-## Version: 1.2.1
+## Version: 1.2.2
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: EventAssistantPlayersTable, EventAssistantConfig
