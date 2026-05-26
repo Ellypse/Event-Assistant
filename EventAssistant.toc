@@ -1,4 +1,4 @@
-## Interface: 80300
+## Interface: 120001, 120005, 120007
 ## Title: Event Assistant
 ## Author: Ellypse
 ## Notes: Makes organizing events easier
